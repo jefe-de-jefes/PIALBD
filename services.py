@@ -58,7 +58,7 @@ class Cliente:
 
             if not datos:
                 print(f"Error: No se encontró ningún cliente con el ID {id_client}.")
-                input('Presione enter para volver al menu principal...')
+                input('Presione enter para volver al menú principal...')
                 return
 
             if self.validar_cliente(datos) == 2:
@@ -76,8 +76,8 @@ class Cliente:
             }
             
             if option == 5:
-                print('Cancelando modificacion...')
-                input('Presione enter para volver al menu principal...')
+                print('Cancelando modificación...')
+                input('Presione enter para volver al menú principal...')
                 return
 
             var = column_map[option]
@@ -101,7 +101,7 @@ class Cliente:
             datos_nuevos = self.cursor.fetchone()
             
             if self.validar_cliente(datos_nuevos) == 2:
-                print('Deshaciendo ultimo movimiento...')
+                print('Deshaciendo último movimiento...')
                 self.conn.rollback()
                 input('Ultimo movimiento cancelado exitosamente...')
                 return
@@ -118,10 +118,10 @@ class Cliente:
             print(f'Error en la base de datos: {e}')
             self.conn.rollback()
         except Exception as e:
-            print(f'Error inesperado al actualizar cliente: {e}')
+            print(f'Error inesperado al actualizar el cliente: {e}')
             self.conn.rollback()
         finally:
-            input('Presione cualquier tecla para volver al menu principal.')
+            input('Presione cualquier tecla para volver al menú principal.')
 
     def validar_cliente(self, datos)->int:
         try:
@@ -132,7 +132,7 @@ class Cliente:
 
             option = pedir_int('Para confirmar presione 1. Para cancelar presione 2: ', 1, 2)
             if option == 2:
-                print('*** Operacion cancelada. ***')
+                print('*** Operación cancelada. ***')
             return option
         except Exception as e:
             print(f'Error en validar_cliente.: {e}')
@@ -436,7 +436,100 @@ class Proveedores:
             self.conn.rollback()
         finally:
             input('Presione cualquier tecla para volver al menu principal.')
+ 
     
+    def actualizar_proveedor(self, id_proveedor):
+        try:
+            cleaner()
+            print(f"** ACTUALIZAR PROVEEDOR #{id_proveedor} **")   
+            
+            sql_proveedor = ('SELECT * FROM proveedores WHERE id_proveedor = %s')
+            self.cursor.execute(sql_proveedor, (id_proveedor,))
+            datos = self.cursor.fetchone()
+            
+            if not datos:
+                print(f"Error: No se encontró ningún proveedor con el ID {id_proveedor}.")
+                input('Presione enter para volver al menú principal...')
+                return
+            
+            if self.validar_proveedor(datos) == 2: #FALTA CREAR VALIDAR PROVEEDOR
+                input('Presione enter para volver al menu principal...')
+                return
+            
+            cleaner()
+            #option = menu_actualizar_proveedor falta crear
+            
+            column_map = {
+                1: 'telefono',
+                2: 'nombre'
+            }
+            
+            if option == 3:
+                print("Cancelando modificación...")
+                input("Presione enter para volver al menú principal...")
+                return
+            
+            var = column_map[option]
+            
+            if option == 1:
+                new_dato = input("Introduzca el nuevo telefono: ")
+            else:
+                new_dato = input("Introduzca el nuevo nombre")
+                
+            sql_actualizar = (f"UPDATE proveedores SET {var} = %s WHERE id_proveedor = %s")
+            values = (new_dato, id_proveedor)
+            self.cursor.execute(sql_actualizar, values)
+            
+            print("** Verificación de datos actualizados **")
+            sql_client = ('SELECT * FROM proveedores WHERE id_proveedor = %s')
+            self.cursor.execute(sql_proveedor, (id_proveedor,))
+            datos_nuevos = self.cursor.fetchone()
+            
+            if self.validar_proveedor(datos_nuevos) == 2: #falta validar proveedor
+                print("Deshaciendo último movimiento...")
+                self.conn.rollback()
+                input("Ultimo movimiento cancelado exitosamente...")
+                return
+            
+            self.conn.commit()
+            print(f"*** Usuario #{id_proveedor} actualizado con exito. ***")
+            input()
+            return
+        
+        except errors.IntegrityError as e:
+            print(f"Error: {e}")
+            self.conn.rollback()
+        except errors.DatabaseError as e:
+            print(f"Error en la base de datos: {e}")
+            self.conn.rollback()
+        except Exception as e:
+            print(f"Error inesperado al actualizar el proveedor: {e}")
+            self.conn.rollback()
+        finally:
+            input("Presione cualquier tecla para vovler al menú principal.")
+        
+    def validar_proveedor(self, datos) -> int:
+        try:
+            print("Datos del proveedor")
+            print(f"{"Id_Proveedor":<15} {"Telefono":<15} {"Nombre":<15}")
+            print(f"{str(datos[0]):<15} | {str(datos[1]):15} | {str(datos[2]):<15}")
+            print()
+            
+            option = pedir_int("Para confirmar presione 1. Para cancelar presione 2")
+            if option == 2:
+                print("***Operación cancelada. ***")
+            return option
+        except Exception as e:
+            print(f"Error en validar_cliente.: {e}")
+            return 2
+                
+                
+            
+            
+                
+            
+            
+            
                 
                     
                     
