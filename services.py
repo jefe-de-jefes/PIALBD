@@ -1,7 +1,7 @@
 import sys
 from mysql.connector import errors
 from utils import cleaner, pedir_correo, pedir_int, pedir_float, pedir_sexo, print_client
-from menus import menu_actualizar, menu_actualizar_produ
+from menus import menu_actualizar, menu_actualizar_produ, menu_actualizar_proveedor
 
 class Cliente:
     def __init__(self, conn, cursor):
@@ -452,12 +452,12 @@ class Proveedores:
                 input('Presione enter para volver al menú principal...')
                 return
             
-            if self.validar_proveedor(datos) == 2: #FALTA CREAR VALIDAR PROVEEDOR
+            if self.validar_proveedor(datos) == 2:
                 input('Presione enter para volver al menu principal...')
                 return
             
             cleaner()
-            #option = menu_actualizar_proveedor falta crear
+            option = menu_actualizar_proveedor()
             
             column_map = {
                 1: 'telefono',
@@ -481,11 +481,11 @@ class Proveedores:
             self.cursor.execute(sql_actualizar, values)
             
             print("** Verificación de datos actualizados **")
-            sql_client = ('SELECT * FROM proveedores WHERE id_proveedor = %s')
+            sql_proveedor = ('SELECT * FROM proveedores WHERE id_proveedor = %s')
             self.cursor.execute(sql_proveedor, (id_proveedor,))
             datos_nuevos = self.cursor.fetchone()
             
-            if self.validar_proveedor(datos_nuevos) == 2: #falta validar proveedor
+            if self.validar_proveedor(datos_nuevos) == 2: 
                 print("Deshaciendo último movimiento...")
                 self.conn.rollback()
                 input("Ultimo movimiento cancelado exitosamente...")
@@ -522,7 +522,32 @@ class Proveedores:
         except Exception as e:
             print(f"Error en validar_cliente.: {e}")
             return 2
+        
+    def reporte_proveedores(self):
+        try:
+            cleaner()
+            print("*** REPORTE DE PROVEEDORES ACTIVOS ***")
+            self.cursor.execute('SELECT * FROM proveedores;')
+            datos = self.cursor.fetchall()
+            
+            if not datos:
+                print("No hay clientes registrados.")
+                return
+
+            headers = [desc[0] for desc in self.cursor.description]
+            print(" | ".join(f"{h:<20}" for h in headers))
+            print("-" * (len(headers) * 23))
+            
+            for row in datos:
+                print(" | ".join(f"{str(col):<20}" for col in row))
                 
+        except Exception as e:
+            print("Error inesperado: ", e)
+        finally:
+            input("\nPresione cualquier tecla para volver al menú...")
+
+                 
+                 
                 
             
             

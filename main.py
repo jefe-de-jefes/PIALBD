@@ -4,7 +4,7 @@ import getpass
 import sys
 
 from menus import menu_principal, menu_reportes
-from services import Cliente, Ventas, Inventario
+from services import Cliente, Ventas, Inventario, Proveedores
 from utils import pedir_int
 
 def main():
@@ -34,10 +34,11 @@ def main():
         venta_service = Ventas(conn, cursor)
         client_service = Cliente(conn, cursor)
         stock_service = Inventario(conn, cursor)
+        proveedores_service = Proveedores(conn, cursor)
 
         option_menu:int = 0
 
-        while(option_menu != 6):
+        while(option_menu != 8):
             option_menu = menu_principal()
             
             if option_menu == 1:
@@ -55,6 +56,13 @@ def main():
                 stock_service.actualizar_stock(produ_id)
                 
             elif option_menu == 5:
+                proveedores_service.insertar_proveedor()
+            
+            elif option_menu == 6:
+                proveedor_id = pedir_int("Introduce el id del proveedor: ", 1, sys.maxsize)
+                proveedores_service.actualizar_proveedor(proveedor_id)
+                
+            elif option_menu == 7:
                 op_reportes = menu_reportes()
                 if op_reportes == 1:
                     venta_service.reporte_ventas()
@@ -63,9 +71,11 @@ def main():
                 elif op_reportes == 3:
                     stock_service.reporte_stock()
                 elif op_reportes == 4:
+                    proveedores_service.reporte_proveedores
+                elif op_reportes == 5:
                     print('Regresando al menu principal...')
                     
-            elif option_menu == 6:
+            elif option_menu == 8:
                 print('Vuelva pronto.')
                 break
 
