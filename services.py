@@ -1,4 +1,3 @@
-# services.py
 import sys
 from mysql.connector import errors
 from utils import cleaner, pedir_correo, pedir_int, pedir_float, pedir_sexo, print_client
