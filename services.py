@@ -398,3 +398,45 @@ class Inventario:
             print('Error inesperado: ', e)
         finally:
             input("\nPresione cualquier tecla para volver al menú...")
+
+
+class Proveedores:
+    def __init__(self, conn, cursor):
+        self.conn = conn
+        self.cursor = cursor
+        
+    def insertar_proveedor(self):
+        try:
+            cleaner()
+            while True:
+                print("** NUEVO PROVEEDOR ***")
+                telefono_proveedor = pedir_int("Introduzca el telefono del proveedor: ", 1000000000, 9999999999)
+                nombre_proveedor = input("Introduzca el nombre del proveedor: ")
+                print(f'Telefono: {telefono_proveedor}')
+                print(f'Nombre: {nombre_proveedor}')
+                option = pedir_int('Para confirmar presione 1. Para cancelar presione 2: ',1,2 )
+                if option == 2:
+                    print('*** Operacion cancelada. ***')
+                    return
+                sql_insert = ('INSERT INTO proveedores (telefono_proveedor, nombre_proveedor) VALUES (%s, %s)')
+                values = (telefono_proveedor, nombre_proveedor)
+                self.cursor.execute(sql_insert,values)
+                self.conn.commit()
+                print(f'*** Proveedor #{self.cursor.lastrowid} registrado con exito. ***')
+                input()
+                return
+        except errors.IntegrityError as e:
+            print(f'Error: El telefono {telefono_proveedor} ya está registrado. {e}')
+            self.conn.rollback()
+        except errors.DatabaseError as e:
+            print(f'Error en la base de datos: {e}')
+            self.conn.rollback()
+        except Exception as e:
+            print(f'Error inesperado al insertar proveedor: {e}')
+            self.conn.rollback()
+        finally:
+            input('Presione cualquier tecla para volver al menu principal.')
+    
+                
+                    
+                    
