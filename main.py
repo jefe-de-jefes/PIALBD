@@ -1,25 +1,26 @@
 import mysql.connector
 from mysql.connector import errors
-import getpass 
 import sys
 
 from menus import menu_principal, menu_reportes
 from services import Cliente, Ventas, Inventario, Proveedores
-from utils import pedir_int
-
+from utils import pedir_int, pedir_str_no_vacio, pedir_password, cleaner
 def main():
     conn = None
     cursor = None
     try:
-        user = input('Introduzca su usuario> ')
-        password = getpass.getpass('Introduzca la contraseña> ')
+        cleaner()
+        print('=== BIENVENIDO A LA GESTION DE LA TIENDA ALFA ===')
+        print('Por favor, inicie sesión son su usuario root de la base de datos para continuar.')
+        user = pedir_str_no_vacio('Introduzca su usuario> ')
+        password = pedir_password('Introduzca la contraseña> ')
         
         conn = mysql.connector.connect(
             host='localhost',
             port=3306,
             user=user,
             password=password,
-            database='First'
+            database='ALFA'
         )
 
         if conn.is_connected():
@@ -81,7 +82,7 @@ def main():
 
     except errors.Error as e:
         if e.errno == 1044:
-            print(f"Error: Acceso denegado para el usuario '{user}'@'localhost' a la base de datos 'First'.")
+            print(f"Error: Acceso denegado para el usuario '{user}'@'localhost' a la base de datos 'ALFA'.")
         elif e.errno == 1045:
             print(f"Error: Acceso denegado. Revise su usuario ('{user}') y contraseña.")
         elif e.errno == 2003:

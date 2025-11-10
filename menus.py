@@ -2,7 +2,7 @@ from utils import pedir_int, cleaner
 
 def menu_principal()->int:
     cleaner()
-    print('BIENVENIDO AL MENU PRINCIPAL DE INTERACCION CON FIRST')
+    print('BIENVENIDO AL MENU PRINCIPAL DE INTERACCION CON ALFA')
     print('1.-Nueva venta')
     print('2.-Dar de alta cliente')
     print('3.-Modificar cliente')

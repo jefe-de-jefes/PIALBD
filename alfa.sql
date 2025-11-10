@@ -1,7 +1,7 @@
 /*M!999999\- enable the sandbox mode */ 
 -- MariaDB dump 10.19-11.8.3-MariaDB, for debian-linux-gnu (x86_64)
 --
--- Host: localhost    Database: First
+-- Host: localhost    Database: ALFA
 -- ------------------------------------------------------
 -- Server version	11.8.3-MariaDB-1+b1 from Debian
 
@@ -20,8 +20,8 @@
 -- Table structure for table `clientes`
 --
 
-CREATE DATABASE IF NOT EXISTS First;
-USE First;
+CREATE DATABASE IF NOT EXISTS ALFA;
+USE ALFA;
 
 DROP TABLE IF EXISTS `clientes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
@@ -158,7 +158,7 @@ UNLOCK TABLES;
 commit;
 
 --
--- Dumping routines for database 'First'
+-- Dumping routines for database 'ALFA'
 --
 
 /*!50003 DROP FUNCTION IF EXISTS `fn_calcular_total_con_iva` */;
@@ -308,7 +308,16 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_reporte_clientes`()
 BEGIN
-    SELECT * FROM clientes ORDER BY nombre;
+    SELECT 
+        id_cliente,
+        nombre,
+        email,
+        edad,
+        tot_pedidos,
+        sexo,
+        fn_calcular_gasto_total_cliente(id_cliente) AS Gasto_Total
+    FROM clientes 
+    ORDER BY nombre;
 END ;;
 DELIMITER ;
 
@@ -320,7 +329,6 @@ CREATE PROCEDURE `sp_actualizar_cliente_nombre`(
 )
 BEGIN
     UPDATE clientes SET nombre = in_nuevo_nombre WHERE id_cliente = in_id_cliente;
-    COMMIT;
 END ;;
 DELIMITER ;
 
@@ -332,7 +340,6 @@ CREATE PROCEDURE `sp_actualizar_cliente_email`(
 )
 BEGIN
     UPDATE clientes SET email = in_nuevo_email WHERE id_cliente = in_id_cliente;
-    COMMIT;
 END ;;
 DELIMITER ;
 
@@ -344,19 +351,212 @@ CREATE PROCEDURE `sp_actualizar_cliente_edad`(
 )
 BEGIN
     UPDATE clientes SET edad = in_nuevo_edad WHERE id_cliente = in_id_cliente;
-    COMMIT;
 END ;;
 DELIMITER ;
 
 /*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_cliente_sexo` */;
 DELIMITER ;;
-CREATE PROCEDURE `sp_actualizar_cliente_edad`(
+CREATE PROCEDURE `sp_actualizar_cliente_sexo`(
     IN in_id_cliente INT,
     IN in_nuevo_sexo ENUM('M', 'F')
 )
 BEGIN
-    UPDATE clientes SET edad = in_nuevo_edad WHERE id_cliente = in_id_cliente;
+    UPDATE clientes SET sexo = in_nuevo_sexo WHERE id_cliente = in_id_cliente;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_insertar_proveedor` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_insertar_proveedor`(
+    IN in_telefono VARCHAR(20),
+    IN in_nombre VARCHAR(100),
+    OUT out_id_proveedor INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR 1062 -- Telefono duplicado
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: El teléfono ya está registrado.';
+    END;
+
+    START TRANSACTION;
+    INSERT INTO proveedores (telefono, nombre_proveedor) 
+    VALUES (in_telefono, in_nombre);
+    SET out_id_proveedor = LAST_INSERT_ID();
     COMMIT;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_reporte_ventas_general` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_reporte_ventas_general`()
+BEGIN
+    SELECT 
+        v.id_venta, 
+        c.nombre AS Cliente, 
+        p.nombre_producto AS Producto, 
+        v.total_articulos, 
+        v.total_venta, 
+        v.fecha_venta
+    FROM ventas v
+    JOIN clientes c ON v.id_cliente = c.id_cliente
+    JOIN productos p ON v.id_producto = p.id_producto
+    ORDER BY v.fecha_venta DESC;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_consultar_ventas_cliente_fecha` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_consultar_ventas_cliente_fecha`(
+    IN in_email VARCHAR(100),
+    IN in_fecha_inicio DATE
+)
+BEGIN
+    SELECT 
+        v.id_venta, 
+        p.nombre_producto, 
+        v.total_articulos, 
+        v.total_venta, 
+        v.fecha_venta
+    FROM ventas v
+    JOIN clientes c ON v.id_cliente = c.id_cliente
+    JOIN productos p ON v.id_producto = p.id_producto
+    WHERE 
+        c.email = in_email 
+        AND DATE(v.fecha_venta) >= in_fecha_inicio
+    ORDER BY v.fecha_venta DESC;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_reporte_productos_en_stock` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_reporte_productos_en_stock`()
+BEGIN
+    SELECT * FROM productos WHERE stock > 0 ORDER BY nombre_producto;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP FUNCTION IF EXISTS `fn_calcular_gasto_total_cliente` */;
+DELIMITER ;;
+CREATE FUNCTION `fn_calcular_gasto_total_cliente`(
+    in_id_cliente INT
+) 
+RETURNS DECIMAL(10, 2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE v_total_gastado DECIMAL(10, 2);
+    
+    SELECT SUM(total_venta) 
+    INTO v_total_gastado 
+    FROM ventas 
+    WHERE id_cliente = in_id_cliente;
+    
+    IF v_total_gastado IS NULL THEN
+        RETURN 0.00;
+    END IF;
+    
+    RETURN v_total_gastado;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP FUNCTION IF EXISTS `fn_formatear_moneda` */;
+DELIMITER ;;
+CREATE FUNCTION `fn_formatear_moneda`(
+    in_valor DECIMAL(10, 2)
+) 
+RETURNS VARCHAR(20)
+DETERMINISTIC
+BEGIN
+    RETURN CONCAT('$', FORMAT(in_valor, 2));
+END ;;
+DELIMITER ;
+
+
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_producto_nombre` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_producto_nombre`(
+    IN in_id_producto INT,
+    IN in_nuevo_nombre VARCHAR(100)
+)
+BEGIN
+    UPDATE productos SET nombre_producto = in_nuevo_nombre 
+    WHERE id_producto = in_id_producto;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_producto_stock` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_producto_stock`(
+    IN in_id_producto INT,
+    IN in_nuevo_stock INT
+)
+BEGIN
+    UPDATE productos SET stock = in_nuevo_stock 
+    WHERE id_producto = in_id_producto;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_producto_precio` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_producto_precio`(
+    IN in_id_producto INT,
+    IN in_nuevo_precio DECIMAL(10, 2)
+)
+BEGIN
+    UPDATE productos SET precio = in_nuevo_precio 
+    WHERE id_producto = in_id_producto;
+END ;;
+DELIMITER ;
+
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_reporte_stock` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_reporte_stock`()
+BEGIN
+    SELECT 
+        id_producto,
+        nombre_producto,
+        stock,
+        fn_formatear_moneda(precio) AS precio,
+        id_proveedor
+    FROM productos
+    ORDER BY nombre_producto;
+END ;;
+DELIMITER ;
+
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_proveedor_telefono` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_proveedor_telefono`(
+    IN in_id_proveedor INT,
+    IN in_nuevo_telefono VARCHAR(20)
+)
+BEGIN
+    UPDATE proveedores SET telefono = in_nuevo_telefono 
+    WHERE id_proveedor = in_id_proveedor;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_proveedor_nombre` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_proveedor_nombre`(
+    IN in_id_proveedor INT,
+    IN in_nuevo_nombre VARCHAR(100)
+)
+BEGIN
+    UPDATE proveedores SET nombre_proveedor = in_nuevo_nombre 
+    WHERE id_proveedor = in_id_proveedor;
+END ;;
+DELIMITER ;
+
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_reporte_proveedores` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_reporte_proveedores`()
+BEGIN
+    SELECT * FROM proveedores ORDER BY nombre_proveedor;
 END ;;
 DELIMITER ;
 
