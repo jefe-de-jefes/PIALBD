@@ -67,7 +67,7 @@ CREATE TABLE `productos` (
   `id_proveedor` int(11) DEFAULT NULL,
   PRIMARY KEY (`id_producto`),
   KEY `fk_produ_provee` (`id_proveedor`),
-  CONSTRAINT `fk_produ_provee` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedores` (`Id_proveedor`)
+  CONSTRAINT `fk_produ_provee` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedores` (`id_proveedor`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -160,6 +160,25 @@ commit;
 --
 -- Dumping routines for database 'First'
 --
+
+/*!50003 DROP FUNCTION IF EXISTS `fn_calcular_total_con_iva` */;
+DELIMITER ;;
+CREATE FUNCTION `fn_calcular_total_con_iva`(
+    in_precio_unitario DECIMAL(10, 2),
+    in_cantidad INT
+) 
+RETURNS DECIMAL(10, 2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_subtotal DECIMAL(10, 2);
+    DECLARE v_total_con_iva DECIMAL(10, 2);
+    
+    SET v_subtotal = in_precio_unitario * in_cantidad;
+    SET v_total_con_iva = v_subtotal * 1.16; -- Se aplica el 16% de IVA
+    
+    RETURN v_total_con_iva;
+END ;;
+DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */;
 /*!50003 DROP PROCEDURE IF EXISTS `sp_crear_venta` */;
@@ -168,7 +187,7 @@ commit;
 /*!50003 SET @saved_col_connection = @@collation_connection */ ;
 /*!50003 SET character_set_client  = utf8mb4 */ ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_uca1400_ai_ci */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_crear_venta`(
     IN in_id_cliente INT,
@@ -191,11 +210,9 @@ BEGIN
         
         RESIGNAL; 
     END;
-
     
     START TRANSACTION;
 
-    
     SELECT COUNT(*) INTO v_cliente_existe FROM clientes WHERE id_cliente = in_id_cliente;
     IF v_cliente_existe = 0 THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: El cliente no existe.';
@@ -223,7 +240,7 @@ BEGIN
     END IF;
 
     
-    SET v_total_venta = v_precio_producto * in_cantidad;
+    SET v_total_venta = fn_calcular_total_con_iva(v_precio_producto, in_cantidad);
 
     
     INSERT INTO ventas (id_cliente, id_producto, total_articulos, total_venta, fecha_venta) 
@@ -247,6 +264,102 @@ BEGIN
 
 END ;;
 DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_insertar_cliente` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_insertar_cliente`(
+    IN in_nombre VARCHAR(100),
+    IN in_email VARCHAR(100),
+    IN in_edad INT,
+    IN in_sexo ENUM('M', 'F'),
+    OUT out_id_cliente INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR 1062
+    BEGIN
+        ROLLBACK;
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: El correo electrónico ya está registrado.';
+    END;
+
+    START TRANSACTION;
+    
+    INSERT INTO clientes (nombre, email, edad, sexo) 
+    VALUES (in_nombre, in_email, in_edad, in_sexo);
+    
+    SET out_id_cliente = LAST_INSERT_ID();
+    
+    COMMIT;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_reporte_clientes` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_reporte_clientes`()
+BEGIN
+    SELECT * FROM clientes ORDER BY nombre;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_cliente_nombre` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_cliente_nombre`(
+    IN in_id_cliente INT,
+    IN in_nuevo_nombre VARCHAR(100)
+)
+BEGIN
+    UPDATE clientes SET nombre = in_nuevo_nombre WHERE id_cliente = in_id_cliente;
+    COMMIT;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_cliente_email` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_cliente_email`(
+    IN in_id_cliente INT,
+    IN in_nuevo_email VARCHAR(100)
+)
+BEGIN
+    UPDATE clientes SET email = in_nuevo_email WHERE id_cliente = in_id_cliente;
+    COMMIT;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_cliente_edad` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_cliente_edad`(
+    IN in_id_cliente INT,
+    IN in_nuevo_edad INT
+)
+BEGIN
+    UPDATE clientes SET edad = in_nuevo_edad WHERE id_cliente = in_id_cliente;
+    COMMIT;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_cliente_sexo` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_cliente_edad`(
+    IN in_id_cliente INT,
+    IN in_nuevo_sexo ENUM('M', 'F')
+)
+BEGIN
+    UPDATE clientes SET edad = in_nuevo_edad WHERE id_cliente = in_id_cliente;
+    COMMIT;
+END ;;
+DELIMITER ;
+
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;

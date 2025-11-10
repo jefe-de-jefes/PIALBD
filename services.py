@@ -27,19 +27,23 @@ class Cliente:
                     print('***Operacion cancelada. ***')
                     return
                 
-                sql_insert = ('INSERT INTO clientes (nombre, email, edad, sexo) VALUES (%s, %s, %s, %s)')
-                values = (nombre, email, edad, sexo)
-                self.cursor.execute(sql_insert, values)
+                
+                args = (nombre, email, edad, sexo, 0)
+                
+                result_args = self.cursor.callproc('sp_insertar_cliente', args)
+                
                 self.conn.commit()
 
-                print(f'*** Cliente #{self.cursor.lastrowid} registrado con exito. ***')
+                new_client_id = result_args[4]
+
+                print(f'*** Cliente #{new_client_id} registrado con exito. ***')
+                
+                
                 input()
                 return
-        except errors.IntegrityError as e:
-            print(f'Error: El correo {email} ya está registrado. {e}')
-            self.conn.rollback()
         except errors.DatabaseError as e:
-            print(f'Error en la base de datos: {e}')
+            print(f"\n¡ERROR AL REGISTRAR CLIENTE!")
+            print(f"Base de datos dice: {e.msg}")
             self.conn.rollback()
         except Exception as e:
             print(f'Error inesperado al insertar cliente: {e}')
@@ -68,32 +72,34 @@ class Cliente:
             cleaner()
             option = menu_actualizar()
             
-            column_map = {
-                1: 'nombre',
-                2: 'email',
-                3: 'edad',
-                4: 'sexo'
-            }
+
             
             if option == 5:
                 print('Cancelando modificación...')
                 input('Presione enter para volver al menú principal...')
                 return
 
-            var = column_map[option]
 
             if option == 1:
                 new_dato = input('Introduzca el nuevo nombre: ')
+                args = (id_client, new_dato)
+                self.cursor.callproc('sp_actualizar_cliente_nombre', args)
+                
             elif option == 2:
-                new_dato = pedir_correo('Introduzca el nuevo correo: ') 
+                new_dato = pedir_correo('Introduzca el nuevo correo: ')
+                self.cursor.callproc('sp_actualizar_cliente_email', args)
+                
             elif option == 3:
                 new_dato = pedir_int('Introduce la nueva edad del cliente: ', 1, 75)
+                args = (id_client, new_dato)
+                self.cursor.callproc('sp_actualizar_cliente_edad', args)
+                
             elif option == 4:
                 new_dato = pedir_sexo()
+                args = (id_client, new_dato)
+                self.cursor.callproc('sp_actualizar_cliente_sexo', args)
 
-            sql_actualizar = (f'UPDATE clientes SET {var} = %s WHERE id_cliente = %s')
-            values = (new_dato, id_client)
-            self.cursor.execute(sql_actualizar, values)
+            print('** Verificación de datos actualizados **')
 
             print('** Verificación de datos actualizados **')
             sql_client = ('SELECT * FROM clientes WHERE id_cliente = %s')
@@ -142,9 +148,13 @@ class Cliente:
         try:
             cleaner()
             print('*** REPORTE DE CLIENTES ACTIVOS ***')
-            self.cursor.execute('SELECT * FROM clientes;')
-            datos = self.cursor.fetchall()
 
+            self.cursor.callproc('sp_reporte_clientes')
+
+            datos = []
+            for result in self.cursor.stored_results():
+                datos = result.fetchall()
+            
             if not datos:
                 print("No hay clientes registrados.")
                 return
