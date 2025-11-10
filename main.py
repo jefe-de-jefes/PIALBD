@@ -9,30 +9,49 @@ from utils import pedir_str_no_vacio, pedir_password, cleaner
 def main():
     conn = None
     cursor = None
-    try:
-        cleaner()
-        print('=== BIENVENIDO A LA GESTION DE LA TIENDA ALFA ===')
-        print('Por favor, inicie sesión son su usuario root de la base de datos para continuar.')
-        user = pedir_str_no_vacio('Introduzca su usuario> ')
-        password = pedir_password('Introduzca la contraseña> ')
-        
-        conn = mysql.connector.connect(
-            host='localhost',
-            port=3306,
-            user=user,
-            password=password,
-            database='ALFA'
-        )
+    while True:
+        try:
+            cleaner()
+            print('*** BIENVENIDO A LA GESTION DE LA TIENDA ALFA ***')
+            print('Por favor, inicie sesión son su usuario root de la base de datos para continuar.')
+            user = pedir_str_no_vacio('Introduzca su usuario> ')
+            password = pedir_password('Introduzca la contraseña> ')
+            
+            conn = mysql.connector.connect(
+                host='localhost',
+                port=3306,
+                user=user,
+                password=password,
+                database='ALFA'
+            )
 
-        if conn.is_connected():
-            print('Conectado a la BD')
-            cursor = conn.cursor()
-            cursor.execute("SELECT DATABASE();")
-            record = cursor.fetchone()
-            print(f"Conectado a: {record[0]}")
+            if conn.is_connected():
+                print('Conectado a la BD')
+                cursor = conn.cursor()
+                cursor.execute("SELECT DATABASE();")
+                record = cursor.fetchone()
+                print(f"Conectado a: {record[0]}")
+                input("Presione Enter para continuar...")
+                break
+
+        except errors.Error as e:
+            if e.errno == 1044:
+                print(f"Error: Acceso denegado para el usuario '{user}'@'localhost' a la base de datos 'ALFA'.")
+            elif e.errno == 1045:
+                print(f"Error: Acceso denegado. Revise su usuario ('{user}') y contraseña.")
+            elif e.errno == 2003:
+                print("Error: No se pudo conectar al servidor de MySQL. ¿Está encendido?")
+            else:
+                print(f'Error de base de datos inesperado: {e}')
+            
+            print("\nPor favor, intente de nuevo.")
+            input("Presione Enter para continuar...")
+        except Exception as e:
+            print(f'Error general inesperado durante el login: {e}')
+            print("\nPor favor, intente de nuevo.")
             input("Presione Enter para continuar...")
 
-
+    try:
         venta_service = Ventas(conn, cursor)
         client_service = Cliente(conn, cursor)
         stock_service = Inventario(conn, cursor)
@@ -59,18 +78,10 @@ def main():
                     break
                 case _:
                     print('Opción no válida, intente de nuevo.')
-    except errors.Error as e:
-        if e.errno == 1044:
-            print(f"Error: Acceso denegado para el usuario '{user}'@'localhost' a la base de datos 'ALFA'.")
-        elif e.errno == 1045:
-            print(f"Error: Acceso denegado. Revise su usuario ('{user}') y contraseña.")
-        elif e.errno == 2003:
-            print("Error: No se pudo conectar al servidor de MySQL. ¿Está encendido?")
-        else:
-            print(f'Error de base de datos inesperado: {e}')
 
     except Exception as e:
-        print(f'Error general inesperado: {e}')
+        print(f'\n¡Ha ocurrido un error inesperado durante la ejecución!')
+        print(f'Error: {e}')
 
     finally:
         if cursor is not None:
