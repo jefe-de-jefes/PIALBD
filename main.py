@@ -1,10 +1,11 @@
 import mysql.connector
 from mysql.connector import errors
+from controllers import ejecutar_menu_clientes, ejecutar_menu_proveedores, ejecutar_menu_productos, ejecutar_menu_ventas, ejecutar_menu_reportes
 import sys
 
-from menus import menu_principal, menu_reportes
+from menus import menu_principal
 from services import Cliente, Ventas, Inventario, Proveedores
-from utils import pedir_int, pedir_str_no_vacio, pedir_password, cleaner
+from utils import pedir_str_no_vacio, pedir_password, cleaner
 def main():
     conn = None
     cursor = None
@@ -37,49 +38,27 @@ def main():
         stock_service = Inventario(conn, cursor)
         proveedores_service = Proveedores(conn, cursor)
 
-        option_menu:int = 0
+        option_menu = -1
 
-        while(option_menu != 8):
+        while option_menu != 0:
             option_menu = menu_principal()
-            
-            if option_menu == 1:
-                venta_service.new_venta()
-                
-            elif option_menu == 2:
-                client_service.insertar_cliente()
-                
-            elif option_menu == 3:
-                client_id = pedir_int('Introduce el id del cliente: ', 1, sys.maxsize)
-                client_service.actualizar_cliente(client_id)
-                
-            elif option_menu == 4:
-                produ_id = pedir_int('Introduce el id del producto: ', 1, sys.maxsize)
-                stock_service.actualizar_stock(produ_id)
-                
-            elif option_menu == 5:
-                proveedores_service.insertar_proveedor()
-            
-            elif option_menu == 6:
-                proveedor_id = pedir_int("Introduce el id del proveedor: ", 1, sys.maxsize)
-                proveedores_service.actualizar_proveedor(proveedor_id)
-                
-            elif option_menu == 7:
-                op_reportes = menu_reportes()
-                if op_reportes == 1:
-                    venta_service.reporte_ventas()
-                elif op_reportes == 2:
-                    client_service.reporte_clientes()
-                elif op_reportes == 3:
-                    stock_service.reporte_stock()
-                elif op_reportes == 4:
-                    proveedores_service.reporte_proveedores()
-                elif op_reportes == 5:
-                    print('Regresando al menu principal...')
-                    
-            elif option_menu == 8:
-                print('Vuelva pronto.')
-                break
 
+            match option_menu:
+                case 1:
+                    ejecutar_menu_ventas(venta_service)
+                case 2:
+                    ejecutar_menu_clientes(client_service)
+                case 3:
+                    ejecutar_menu_productos(stock_service)
+                case 4:
+                    ejecutar_menu_proveedores(proveedores_service)
+                case 5:
+                    ejecutar_menu_reportes(venta_service, client_service, stock_service, proveedores_service)
+                case 0:
+                    print('Vuelva pronto.')
+                    break
+                case _:
+                    print('Opción no válida, intente de nuevo.')
     except errors.Error as e:
         if e.errno == 1044:
             print(f"Error: Acceso denegado para el usuario '{user}'@'localhost' a la base de datos 'ALFA'.")

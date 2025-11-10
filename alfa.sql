@@ -20,7 +20,8 @@
 -- Table structure for table `clientes`
 --
 
-CREATE DATABASE IF NOT EXISTS ALFA;
+DROP DATABASE IF EXISTS ALFA;
+CREATE DATABASE ALFA;
 USE ALFA;
 
 DROP TABLE IF EXISTS `clientes`;
@@ -34,7 +35,7 @@ CREATE TABLE `clientes` (
   `tot_pedidos` int(11) DEFAULT 0,
   `sexo` enum('M','F') NOT NULL DEFAULT 'M',
   PRIMARY KEY (`id_cliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,10 +45,17 @@ CREATE TABLE `clientes` (
 LOCK TABLES `clientes` WRITE;
 /*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
 set autocommit=0;
-INSERT INTO `clientes` VALUES
-(15,'Luis Fernando','luis@gmail.com',19,0,'M'),
-(16,'Beto','beto@icloud.com',20,1,'M'),
-(17,'Aldo','aldo@hotmail.com',30,1,'M');
+INSERT INTO clientes (nombre, email, edad, tot_pedidos, sexo) VALUES
+('Luis', 'luis@gmail.com', 25, 0, 'M'),
+('Alexis', 'alexis@hotmail.com', 28, 0, 'F'),
+('Aldo', 'aldo@icloud.com', 35, 0, 'M'),
+('Maria', 'maria@gmail.com', 22, 0, 'F'),
+('Jose', 'jose@gmail.com', 40, 0, 'M'),
+('Laura', 'laura@yahoo.com', 27, 0, 'F'),
+('Fernando', 'fernando@gmail.com', 30, 0, 'M'),
+('Isabel', 'isabel@hotmail.com', 31, 0, 'F'),
+('Pedro', 'pedro@gmail.com', 45, 0, 'M'),
+('Sofia', 'sofia@gmail.com', 20, 0, 'F');
 /*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -68,7 +76,7 @@ CREATE TABLE `productos` (
   PRIMARY KEY (`id_producto`),
   KEY `fk_produ_provee` (`id_proveedor`),
   CONSTRAINT `fk_produ_provee` FOREIGN KEY (`id_proveedor`) REFERENCES `proveedores` (`id_proveedor`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -78,16 +86,27 @@ CREATE TABLE `productos` (
 LOCK TABLES `productos` WRITE;
 /*!40000 ALTER TABLE `productos` DISABLE KEYS */;
 set autocommit=0;
-INSERT INTO `productos` VALUES
-(1,'Laptop',49,15000.00,NULL),
-(2,'PC',95,20000.00,NULL),
-(3,'Phone',200,10000.00,NULL),
-(4,'Tablet',25,10000.00,NULL),
-(5,'Desk',10,6000.00,NULL),
-(6,'Shoes',495,2000.00,NULL),
-(7,'Hat',200,3000.00,NULL),
-(8,'Router',60,50000.00,NULL),
-(9,'Car',6,800000.00,NULL);
+INSERT INTO productos (nombre_producto, stock, precio, id_proveedor) VALUES
+('Laptop HP', 40, 15000.00, 1),
+('Monitor LG', 30, 5000.00, 2),
+('Mouse Logitech', 100, 600.00, 3),
+('Teclado Razer', 70, 1200.00, 3),
+('Tablet Samsung', 25, 8500.00, 2),
+('Silla ergonómica', 15, 3000.00, 8),
+('Escritorio', 10, 4500.00, 8),
+('Smartphone Xiaomi', 50, 7000.00, 2),
+('Audífonos Sony', 60, 1800.00, 3),
+('Impresora Epson', 20, 4000.00, 4),
+('Zapatos deportivos', 80, 1200.00, 5),
+('Camisa formal', 150, 800.00, 5),
+('Cafetera Philips', 25, 2200.00, 6),
+('Sofá reclinable', 8, 9500.00, 8),
+('Router TP-Link', 35, 1300.00, 7),
+('Monitor Curvo Samsung', 18, 7500.00, 2),
+('Auriculares JBL', 55, 1500.00, 3),
+('Reloj inteligente', 40, 4000.00, 2),
+('Teclado mecánico', 50, 1800.00, 3),
+('Mousepad RGB', 100, 500.00, 3);
 /*!40000 ALTER TABLE `productos` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -104,7 +123,7 @@ CREATE TABLE `proveedores` (
   `telefono` varchar(20) DEFAULT NULL,
   `nombre_proveedor` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id_proveedor`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -114,9 +133,15 @@ CREATE TABLE `proveedores` (
 LOCK TABLES `proveedores` WRITE;
 /*!40000 ALTER TABLE `proveedores` DISABLE KEYS */;
 set autocommit=0;
-INSERT INTO `proveedores` VALUES
-(1,'1234567890','Muebleriasa'),
-(2,'1987654321','Samsung');
+INSERT INTO proveedores (telefono, nombre_proveedor) VALUES
+('8112345678', 'TechMex'),
+('8187654321', 'ElectroPlus'),
+('8199998888', 'Computodo'),
+('8181122334', 'OfiLine'),
+('8111122233', 'ModaExpress'),
+('8123459876', 'CasaCenter'),
+('8110099887', 'GadgetsPro'),
+('8198877665', 'MueblesMX');
 /*!40000 ALTER TABLE `proveedores` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -138,9 +163,9 @@ CREATE TABLE `ventas` (
   PRIMARY KEY (`id_venta`),
   KEY `fk_ventas_producto` (`id_producto`),
   KEY `fk_ventas_cliente` (`id_cliente`),
-  CONSTRAINT `fk_ventas_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_ventas_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  CONSTRAINT `fk_ventas_cliente` FOREIGN KEY (`id_cliente`) REFERENCES `clientes` (`id_cliente`) ON DELETE RESTRICT ON UPDATE CASCADE,
+  CONSTRAINT `fk_ventas_producto` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,9 +175,39 @@ CREATE TABLE `ventas` (
 LOCK TABLES `ventas` WRITE;
 /*!40000 ALTER TABLE `ventas` DISABLE KEYS */;
 set autocommit=0;
-INSERT INTO `ventas` VALUES
-(3,1,16,1,15000.00,'2025-08-31 20:46:51'),
-(4,6,17,5,10000.00,'2025-11-06 22:36:37');
+INSERT INTO ventas (id_producto, id_cliente, total_articulos, total_venta, fecha_venta) VALUES
+(1, 1, 1, 15000.00, '2025-10-01 09:15:00'),
+(2, 2, 2, 10000.00, '2025-10-02 10:20:00'),
+(3, 3, 3, 1800.00, '2025-10-03 11:10:00'),
+(4, 4, 1, 1200.00, '2025-10-04 12:45:00'),
+(5, 5, 1, 8500.00, '2025-10-05 14:30:00'),
+(6, 6, 2, 6000.00, '2025-10-06 15:15:00'),
+(7, 7, 1, 4500.00, '2025-10-07 16:05:00'),
+(8, 8, 2, 14000.00, '2025-10-08 17:25:00'),
+(9, 9, 1, 1800.00, '2025-10-09 18:15:00'),
+(10, 10, 1, 4000.00, '2025-10-10 19:40:00'),
+(11, 1, 3, 3600.00, '2025-10-11 10:35:00'),
+(12, 2, 4, 3200.00, '2025-10-12 11:50:00'),
+(13, 3, 2, 4400.00, '2025-10-13 13:05:00'),
+(14, 4, 1, 9500.00, '2025-10-14 14:55:00'),
+(15, 5, 2, 2600.00, '2025-10-15 16:10:00'),
+(16, 6, 1, 7500.00, '2025-10-16 17:45:00'),
+(17, 7, 2, 3000.00, '2025-10-17 18:50:00'),
+(18, 8, 1, 4000.00, '2025-10-18 19:20:00'),
+(19, 9, 1, 1800.00, '2025-10-19 20:30:00'),
+(20, 10, 2, 1000.00, '2025-10-20 09:40:00'),
+(1, 3, 1, 15000.00, '2025-10-21 10:25:00'),
+(4, 7, 2, 2400.00, '2025-10-22 11:15:00'),
+(5, 8, 1, 8500.00, '2025-10-23 12:00:00'),
+(9, 5, 3, 5400.00, '2025-10-24 13:45:00'),
+(2, 9, 1, 5000.00, '2025-10-25 15:00:00'),
+(8, 6, 2, 14000.00, '2025-10-26 16:20:00'),
+(7, 4, 1, 4500.00, '2025-10-27 17:35:00'),
+(13, 2, 2, 4400.00, '2025-10-28 18:25:00'),
+(15, 1, 1, 1300.00, '2025-10-29 19:10:00'),
+(19, 10, 1, 1800.00, '2025-10-30 20:00:00');
+
+COMMIT;
 /*!40000 ALTER TABLE `ventas` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -408,7 +463,7 @@ DELIMITER ;
 /*!50003 DROP PROCEDURE IF EXISTS `sp_consultar_ventas_cliente_fecha` */;
 DELIMITER ;;
 CREATE PROCEDURE `sp_consultar_ventas_cliente_fecha`(
-    IN in_email VARCHAR(100),
+    IN in_id_cliente INT,
     IN in_fecha_inicio DATE
 )
 BEGIN
@@ -422,7 +477,7 @@ BEGIN
     JOIN clientes c ON v.id_cliente = c.id_cliente
     JOIN productos p ON v.id_producto = p.id_producto
     WHERE 
-        c.email = in_email 
+        c.id_cliente = in_id_cliente
         AND DATE(v.fecha_venta) >= in_fecha_inicio
     ORDER BY v.fecha_venta DESC;
 END ;;
@@ -558,6 +613,91 @@ CREATE PROCEDURE `sp_reporte_proveedores`()
 BEGIN
     SELECT * FROM proveedores ORDER BY nombre_proveedor;
 END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_actualizar_producto_proveedor` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_actualizar_producto_proveedor`(
+    IN in_id_producto INT,
+    IN in_nuevo_id_proveedor INT
+)
+BEGIN
+    DECLARE v_id_proveedor INT;
+
+    IF in_nuevo_id_proveedor = 0 THEN
+        SET v_id_proveedor = NULL;
+    ELSE
+        SET v_id_proveedor = in_nuevo_id_proveedor;
+    END IF;
+
+    IF v_id_proveedor IS NOT NULL AND (SELECT COUNT(*) FROM proveedores WHERE id_proveedor = v_id_proveedor) = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: El proveedor con ese ID no existe.';
+    END IF;
+
+    UPDATE productos SET id_proveedor = v_id_proveedor 
+    WHERE id_producto = in_id_producto;
+END ;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_insertar_producto` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_insertar_producto`(
+    IN in_nombre VARCHAR(100),
+    IN in_stock INT,
+    IN in_precio DECIMAL(10, 2),
+    IN in_id_proveedor INT,
+    OUT out_id_producto INT
+)
+BEGIN
+    DECLARE v_id_proveedor INT;
+
+    IF in_id_proveedor = 0 THEN
+        SET v_id_proveedor = NULL;
+    ELSE
+        SET v_id_proveedor = in_id_proveedor;
+    END IF;
+
+    IF v_id_proveedor IS NOT NULL AND (SELECT COUNT(*) FROM proveedores WHERE id_proveedor = v_id_proveedor) = 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Error: El proveedor con ese ID no existe.';
+    END IF;
+    
+    START TRANSACTION;
+    INSERT INTO productos (nombre_producto, stock, precio, id_proveedor)
+    VALUES (in_nombre, in_stock, in_precio, v_id_proveedor);
+    SET out_id_producto = LAST_INSERT_ID();
+    COMMIT;
+END;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_eliminar_cliente` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_eliminar_cliente`(
+    IN in_id_cliente INT
+)
+BEGIN
+    DELETE FROM clientes WHERE id_cliente = in_id_cliente;
+END;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_eliminar_producto` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_eliminar_producto`(
+    IN in_id_producto INT
+)
+BEGIN
+    DELETE FROM productos WHERE id_producto = in_id_producto;
+END;;
+DELIMITER ;
+
+/*!50003 DROP PROCEDURE IF EXISTS `sp_eliminar_proveedor` */;
+DELIMITER ;;
+CREATE PROCEDURE `sp_eliminar_proveedor`(
+    IN in_id_proveedor INT
+)
+BEGIN
+    DELETE FROM proveedores WHERE id_proveedor = in_id_proveedor;
+END;;
+
 DELIMITER ;
 
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
