@@ -39,8 +39,9 @@ def menu_actualizar_produ()->int:
     print('1.-Nombre del producto')
     print('2.-Stock')
     print('3.-Precio')
-    print('4.-Salir')
-    return pedir_int('Introduzca la opción deseada: ', 1, 4)
+    print('4.-Proveedor')
+    print('5.-Salir')
+    return pedir_int('Introduzca la opción deseada: ', 1, 5)
 
 def menu_actualizar_proveedor()->int:
     cleaner()

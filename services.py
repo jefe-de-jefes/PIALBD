@@ -288,7 +288,8 @@ class Inventario:
             column_map = {
                 1: 'nombre_producto',
                 2: 'stock',
-                3: 'precio'
+                3: 'precio',
+                4: 'proveedor'
             }
             
             try:
@@ -312,7 +313,7 @@ class Inventario:
                     cleaner()
                     option = menu_actualizar_produ()
 
-                    if option == 4:
+                    if option == 5:
                         print('Cancelando modificacion...')
                         input('Presione enter para volver al menu principal...')
                         return
@@ -325,6 +326,8 @@ class Inventario:
                         new_dato = pedir_int('Introduzca la nueva cantidad en inventario: ', 0, sys.maxsize)
                     elif option == 3:
                         new_dato = pedir_float('Introduce el nuevo precio del producto: ', 0.01, float('inf'))
+                    elif option == 4:
+                        new_dato = pedir_int('Introduzca el ID del nuevo proveedor', 1, sys.maxsize) #checar como hacer para que valide solo los proveedores ya registrados
 
                     sql_actualizar = (f'UPDATE productos SET {var} = %s WHERE id_producto = %s')
                     values = (new_dato, id_produ)

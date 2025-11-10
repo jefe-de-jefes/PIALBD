@@ -71,7 +71,7 @@ def main():
                 elif op_reportes == 3:
                     stock_service.reporte_stock()
                 elif op_reportes == 4:
-                    proveedores_service.reporte_proveedores
+                    proveedores_service.reporte_proveedores()
                 elif op_reportes == 5:
                     print('Regresando al menu principal...')
                     
