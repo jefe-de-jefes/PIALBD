@@ -39,7 +39,19 @@ def menu_actualizar_produ()->int:
     print('1.-Nombre del producto')
     print('2.-Stock')
     print('3.-Precio')
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
     print('4.-Proveedor')
+=======
+    print("4.-Proveedor")
+>>>>>>> Stashed changes
+=======
+    print("4.-Proveedor")
+>>>>>>> Stashed changes
+=======
+    print("4.-Proveedor")
+>>>>>>> Stashed changes
     print('5.-Salir')
     return pedir_int('Introduzca la opción deseada: ', 1, 5)
 

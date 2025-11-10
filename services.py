@@ -326,12 +326,40 @@ class Inventario:
                         new_dato = pedir_int('Introduzca la nueva cantidad en inventario: ', 0, sys.maxsize)
                     elif option == 3:
                         new_dato = pedir_float('Introduce el nuevo precio del producto: ', 0.01, float('inf'))
+<<<<<<< Updated upstream
                     elif option == 4:
                         new_dato = pedir_int('Introduzca el ID del nuevo proveedor', 1, sys.maxsize) #checar como hacer para que valide solo los proveedores ya registrados
 
                     sql_actualizar = (f'UPDATE productos SET {var} = %s WHERE id_producto = %s')
                     values = (new_dato, id_produ)
                     self.cursor.execute(sql_actualizar, values)
+=======
+                        self.cursor.callproc('sp_actualizar_producto_precio', (id_produ, new_dato))
+                    elif option == 4:
+                        new_dato = pedir_int("Introduce el ID del nuevo proveedor: ", 1, sys.maxsize)
+                        
+                        sql_prov =('SELECT nombre_proveedor FROM proveedores WHERE id_proveedor = %s')
+                        self.cursor.execute(sql_prov, (new_dato,))
+                        proveedor = self.cursor.fetchone()
+                        
+                        if not proveedor:
+                            print(f"Error: No se encontró proveedor con el ID {new_dato}.")
+                            input("Presione enter para volver al menú...")
+                            return
+                        
+                        print(f"Nuevo proveedor: {proveedor[0]}")
+                        if not pedir_confirmacion("Desea confirmar el cambio de proveedor?"):
+                            return
+                        
+                        self.cursor.callproc("sp_actualizar_producto_proveedor", (id_produ, new_dato))
+                        print("Proveedor actualizado correctamente.")
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
 
                     print('** Verificación de Datos actualizados **')
                     sql_produ = ('SELECT * FROM productos WHERE id_producto = %s')
