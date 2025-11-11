@@ -212,6 +212,21 @@ COMMIT;
 UNLOCK TABLES;
 commit;
 
+SET SQL_SAFE_UPDATES = 0;
+UPDATE clientes c
+LEFT JOIN (
+    SELECT 
+        id_cliente, 
+        COUNT(*) AS conteo_real
+    FROM ventas
+    GROUP BY id_cliente
+) AS v_counts ON c.id_cliente = v_counts.id_cliente
+SET c.tot_pedidos = IFNULL(v_counts.conteo_real, 0);
+
+SET SQL_SAFE_UPDATES = 1;
+
+COMMIT;
+
 --
 -- Dumping routines for database 'ALFA'
 --
